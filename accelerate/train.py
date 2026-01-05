@@ -16,6 +16,8 @@ from tqdm.auto import tqdm
 from accelerate import Accelerator
 import os
 
+torch._dynamo.config.suppress_errors = True
+
 # ----------------------------
 # 1. 配置 & 初始化 Accelerator
 # ----------------------------
@@ -54,8 +56,8 @@ def main():
         root='./data', train=False, download=True, transform=transform_test
     )
 
-    train_loader = DataLoader(trainset, batch_size=64, shuffle=True, num_workers=4)
-    test_loader = DataLoader(testset, batch_size=128, shuffle=False, num_workers=4)
+    train_loader = DataLoader(trainset, batch_size=16, shuffle=True, num_workers=4)
+    test_loader = DataLoader(testset, batch_size=16, shuffle=False, num_workers=4)
 
     # ----------------------------
     # 3. 模型、优化器、损失函数
@@ -133,10 +135,12 @@ if __name__ == "__main__":
     单卡训练：
         python train_cifar100_accelerate.py
 
-    多卡训练：
+    多CPU训练：
         # 自动配置（交互式）
         accelerate config
         # 或直接运行（自动使用所有可见 GPU）
         accelerate launch train_cifar100_accelerate.py
-
+    
+    # 指定多块GPU设备
+    accelerate launch --multi_gpu --num_processes 2 train.py
     """
